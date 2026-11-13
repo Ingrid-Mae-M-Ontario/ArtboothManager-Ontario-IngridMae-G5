@@ -20,4 +20,8 @@ This phase covers the Account Feature: registration, login/logout, role-based da
 6. python manage.py migrate
 7. python manage.py createsuperuser
 8. python manage.py runserver
+<<<<<<< HEAD
 9. Open http://127.0.0.1:8000/register/
+=======
+9. Open http://127.0.0.1:8000/register/
+>>>>>>> ebf3be2ce40b8839b27e0b468a5c1bb9b89333ef
