@@ -51,5 +51,6 @@ class Event(models.Model):
         if self.start_date and self.end_date and self.end_date < self.start_date:
             raise ValidationError('End date cannot be earlier than the start date.')
 
+
     def __str__(self):
         return self.name
