@@ -22,7 +22,8 @@
             <td><span class="badge text-bg-info">{{ event.get_status_display }}</span></td>
             <td>{% for a in event.assistants.all %}{{ a.get_full_name|default:a.username }}{% if not forloop.last %}, {% endif %}{% empty %}-{% endfor %}</td>
             <td class="text-end">
-                <!-- ACTIONS-EXTRA -->
+                <a class="btn btn-sm btn-outline-secondary" href="{% url 'booth:stock_list' event.pk %}">Stock</a>
+                <a class="btn btn-sm btn-outline-secondary" href="{% url 'booth:sales_list' event.pk %}">Sales</a>
                 <a class="btn btn-sm btn-outline-primary" href="{% url 'booth:event_update' event.pk %}">Edit</a>
                 <a class="btn btn-sm btn-outline-danger" href="{% url 'booth:event_delete' event.pk %}">Delete</a>
             </td>

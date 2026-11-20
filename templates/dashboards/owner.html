@@ -4,8 +4,8 @@
 <h2 class="mb-1">Owner Dashboard</h2>
 <p class="text-muted">Welcome, {{ user.first_name|default:user.username }}. Manage your booth here.</p>
 <div class="row g-3">
-    <div class="col-md-4"><div class="card h-100"><div class="card-body"><h5>Item Catalog</h5><p class="text-muted mb-0">Coming in the next phase.</p></div></div></div>
-    <div class="col-md-4"><div class="card h-100"><div class="card-body"><h5>Events &amp; Inventory</h5><p class="text-muted mb-0">Coming in the next phase.</p></div></div></div>
-    <div class="col-md-4"><div class="card h-100"><div class="card-body"><h5>Sales Reports</h5><p class="text-muted mb-0">Coming in the next phase.</p></div></div></div>
+    <div class="col-md-4"><div class="card h-100"><div class="card-body"><h5>Item Catalog</h5><p class="text-muted">Manage the items and prices you sell.</p><a class="btn btn-primary" href="{% url 'booth:item_list' %}">Manage items</a></div></div></div>
+    <div class="col-md-4"><div class="card h-100"><div class="card-body"><h5>Events</h5><p class="text-muted">Plan events and assign booth assistants.</p><a class="btn btn-primary" href="{% url 'booth:event_list' %}">Manage events</a></div></div></div>
+    <div class="col-md-4"><div class="card h-100"><div class="card-body"><h5>Sales</h5><p class="text-muted">Review event sales and void incorrect transactions.</p><a class="btn btn-primary" href="{% url 'booth:event_list' %}">View event sales</a></div></div></div>
 </div>
 {% endblock %}

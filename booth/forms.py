@@ -2,7 +2,7 @@ from django import forms
 from django.core.exceptions import ValidationError
 
 from accounts.models import User
-from booth.models import Event, Item
+from booth.models import Event, EventStock, Item
 
 
 def style(form):
@@ -54,3 +54,51 @@ class EventForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         style(self)
+
+
+class EventStockForm(forms.ModelForm):
+    class Meta:
+        model = EventStock
+        fields = ('item', 'quantity')
+
+    def __init__(self, *args, event, owner, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.event = event
+        self.fields['item'].queryset = Item.objects.filter(owner=owner)
+        if self.instance.pk is None:
+            self.fields['item'].queryset = self.fields['item'].queryset.filter(is_active=True)
+        elif self.instance.sale_lines.exists():
+            self.fields['item'].disabled = True
+        style(self)
+
+    def clean_item(self):
+        item = self.cleaned_data['item']
+        if EventStock.objects.filter(event=self.event, item=item).exclude(pk=self.instance.pk).exists():
+            raise ValidationError('This item already has a stock record for the event.')
+        return item
+
+
+class SaleForm(forms.Form):
+    stock = forms.ModelChoiceField(queryset=EventStock.objects.none(), label='Item')
+    quantity = forms.IntegerField(min_value=1)
+
+    def __init__(self, *args, event, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.event = event
+        self.fields['stock'].queryset = EventStock.objects.filter(
+            event=event, quantity__gt=0, item__is_active=True,
+        ).select_related('item')
+        self.fields['stock'].label_from_instance = (
+            lambda stock: f'{stock.item.name} (₱{stock.item.unit_price} each, {stock.quantity} available)'
+        )
+        style(self)
+
+    def clean(self):
+        cleaned_data = super().clean()
+        if self.event.status == Event.Status.CLOSED:
+            raise ValidationError('Sales cannot be recorded for a closed event.')
+        stock = cleaned_data.get('stock')
+        quantity = cleaned_data.get('quantity')
+        if stock and quantity and quantity > stock.quantity:
+            self.add_error('quantity', 'Quantity exceeds the available event stock.')
+        return cleaned_data

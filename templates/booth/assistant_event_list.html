@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}My Assigned Events{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 class="mb-0">My Assigned Events</h2>
+    <a class="btn btn-outline-secondary" href="{% url 'dashboard' %}">Dashboard</a>
+</div>
+<table class="table table-hover bg-white align-middle">
+    <thead><tr><th>Event</th><th>Venue</th><th>Dates</th><th>Status</th><th>Owner</th><th>Actions</th></tr></thead>
+    <tbody>
+    {% for event in events %}
+        <tr>
+            <td>{{ event.name }}</td>
+            <td>{{ event.venue }}</td>
+            <td>{{ event.start_date }} to {{ event.end_date }}</td>
+            <td><span class="badge text-bg-info">{{ event.get_status_display }}</span></td>
+            <td>{{ event.owner.get_full_name|default:event.owner.username }}</td>
+            <td><a class="btn btn-sm btn-primary" href="{% url 'booth:sales_list' event.pk %}">Sales</a></td>
+        </tr>
+    {% empty %}
+        <tr><td colspan="6" class="text-center text-muted">You have no assigned events.</td></tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

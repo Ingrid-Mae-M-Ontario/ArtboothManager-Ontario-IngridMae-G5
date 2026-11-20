@@ -2,9 +2,8 @@
 {% block title %}Assistant Dashboard{% endblock %}
 {% block content %}
 <h2 class="mb-1">Booth Assistant Dashboard</h2>
-<p class="text-muted">Welcome, {{ user.first_name|default:user.username }}. Your assigned events will appear here.</p>
+<p class="text-muted">Welcome, {{ user.first_name|default:user.username }}. View the events assigned to you.</p>
 <div class="row g-3">
-    <div class="col-md-6"><div class="card h-100"><div class="card-body"><h5>Record a Sale</h5><p class="text-muted mb-0">Coming in the next phase.</p></div></div></div>
-    <div class="col-md-6"><div class="card h-100"><div class="card-body"><h5>Event Stock</h5><p class="text-muted mb-0">Coming in the next phase.</p></div></div></div>
+    <div class="col-md-6"><div class="card h-100"><div class="card-body"><h5>Assigned Events</h5><p class="text-muted">Review event dates, venues, and status.</p><a class="btn btn-primary" href="{% url 'booth:assistant_event_list' %}">View my events</a></div></div></div>
 </div>
 {% endblock %}
