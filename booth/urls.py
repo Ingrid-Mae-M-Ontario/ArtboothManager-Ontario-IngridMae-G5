@@ -1,6 +1,6 @@
 from django.urls import path
 
-from booth import views
+from booth import views, views_sales
 
 app_name = 'booth'
 
@@ -13,4 +13,10 @@ urlpatterns = [
     path('events/new/', views.EventCreateView.as_view(), name='event_create'),
     path('events/<int:pk>/edit/', views.EventUpdateView.as_view(), name='event_update'),
     path('events/<int:pk>/delete/', views.EventDeleteView.as_view(), name='event_delete'),
+    path('events/<int:event_id>/inventory/', views_sales.event_inventory, name='event_inventory'),
+    path('inventory/<int:pk>/edit/', views_sales.InventoryUpdateView.as_view(), name='inventory_update'),
+    path('inventory/<int:pk>/delete/', views_sales.InventoryDeleteView.as_view(), name='inventory_delete'),
+    path('events/<int:event_id>/sell/', views_sales.record_sale, name='record_sale'),
+    path('sales/', views_sales.sale_list, name='sale_list'),
+    path('sales/<int:pk>/void/', views_sales.void_sale, name='void_sale'),
 ]

@@ -53,3 +53,58 @@ class Event(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class EventInventory(models.Model):
+    event = models.ForeignKey(Event, on_delete=models.CASCADE, related_name='inventory')
+    item = models.ForeignKey(Item, on_delete=models.PROTECT, related_name='event_stock')
+    starting_qty = models.PositiveIntegerField()
+    current_qty = models.PositiveIntegerField()
+
+    class Meta:
+        ordering = ['item__name']
+        constraints = [models.UniqueConstraint(fields=['event', 'item'], name='unique_item_per_event')]
+
+    def __str__(self):
+        return f'{self.item} @ {self.event}'
+
+
+class Sale(models.Model):
+    class PaymentMethod(models.TextChoices):
+        CASH = 'CASH', 'Cash'
+        E_WALLET = 'E_WALLET', 'E-Wallet'
+        OTHER = 'OTHER', 'Other'
+
+    class Status(models.TextChoices):
+        COMPLETED = 'COMPLETED', 'Completed'
+        VOIDED = 'VOIDED', 'Voided'
+
+    event = models.ForeignKey(Event, on_delete=models.PROTECT, related_name='sales')
+    recorded_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name='sales_recorded')
+    sale_date = models.DateTimeField(auto_now_add=True)
+    payment_method = models.CharField(max_length=10, choices=PaymentMethod.choices, default=PaymentMethod.CASH)
+    status = models.CharField(max_length=10, choices=Status.choices, default=Status.COMPLETED)
+    total_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+
+    class Meta:
+        ordering = ['-sale_date']
+
+    def __str__(self):
+        return f'Sale #{self.pk}'
+
+
+class SaleItem(models.Model):
+    sale = models.ForeignKey(Sale, on_delete=models.CASCADE, related_name='items')
+    inventory = models.ForeignKey(EventInventory, on_delete=models.PROTECT, related_name='sale_items')
+    quantity = models.PositiveIntegerField(validators=[MinValueValidator(1)])
+    unit_price = models.DecimalField(max_digits=10, decimal_places=2)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=['sale', 'inventory'], name='unique_item_per_sale'),
+            models.CheckConstraint(condition=models.Q(quantity__gte=1), name='sale_item_qty_min_1'),
+        ]
+
+    @property
+    def line_total(self):
+        return self.quantity * self.unit_price

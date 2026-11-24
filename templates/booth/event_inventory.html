@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}Event Stock{% endblock %}
+{% block content %}
+<h2 class="mb-1">Stock for {{ event.name }}</h2>
+<p class="text-muted">{{ event.venue }} &middot; {{ event.get_status_display }}</p>
+<div class="row g-4">
+    <div class="col-lg-8">
+        <table class="table table-hover bg-white align-middle">
+            <thead><tr><th>Item</th><th>Price</th><th>Starting</th><th>Remaining</th><th class="text-end">Actions</th></tr></thead>
+            <tbody>
+            {% for row in rows %}
+                <tr>
+                    <td>{{ row.item.name }}</td>
+                    <td>₱{{ row.item.unit_price }}</td>
+                    <td>{{ row.starting_qty }}</td>
+                    <td>{% if row.current_qty < 5 %}<span class="badge text-bg-danger">{{ row.current_qty }}</span>{% else %}{{ row.current_qty }}{% endif %}</td>
+                    <td class="text-end">
+                        <a class="btn btn-sm btn-outline-primary" href="{% url 'booth:inventory_update' row.pk %}">Adjust</a>
+                        <a class="btn btn-sm btn-outline-danger" href="{% url 'booth:inventory_delete' row.pk %}">Remove</a>
+                    </td>
+                </tr>
+            {% empty %}
+                <tr><td colspan="5" class="text-center text-muted">No stock assigned yet.</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <div class="col-lg-4">
+        <div class="card shadow-sm"><div class="card-body">
+            <h5>Add item to this event</h5>
+            <form method="post" novalidate>
+                {% csrf_token %}
+                {% include "accounts/_form.html" %}
+                <button class="btn btn-primary w-100">Add to stock</button>
+            </form>
+        </div></div>
+    </div>
+</div>
+<a class="btn btn-outline-secondary mt-3" href="{% url 'booth:event_list' %}">Back to events</a>
+{% endblock %}
