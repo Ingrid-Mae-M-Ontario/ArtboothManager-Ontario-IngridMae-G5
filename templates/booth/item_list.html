@@ -9,7 +9,7 @@
     <div class="col-sm-6 col-md-4"><input class="form-control" name="q" value="{{ request.GET.q }}" placeholder="Search items"></div>
     <div class="col-auto"><button class="btn btn-outline-secondary">Search</button></div>
 </form>
-<table class="table table-hover bg-white align-middle">
+<div class="table-responsive"><table class="table table-hover bg-white align-middle">
     <thead><tr><th>Name</th><th>Price</th><th>Status</th><th class="text-end">Actions</th></tr></thead>
     <tbody>
     {% for item in items %}
@@ -26,5 +26,5 @@
         <tr><td colspan="4" class="text-center text-muted">No items yet.</td></tr>
     {% endfor %}
     </tbody>
-</table>
+</table></div>
 {% endblock %}
