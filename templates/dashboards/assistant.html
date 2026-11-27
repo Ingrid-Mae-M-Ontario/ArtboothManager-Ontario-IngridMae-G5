@@ -2,9 +2,41 @@
 {% block title %}Assistant Dashboard{% endblock %}
 {% block content %}
 <h2 class="mb-1">Booth Assistant Dashboard</h2>
-<p class="text-muted">Welcome, {{ user.first_name|default:user.username }}. Your assigned events will appear here.</p>
+<p class="text-muted">Welcome, {{ user.first_name|default:user.username }}. Your assigned events are listed below.</p>
+
+<div class="d-flex justify-content-between align-items-center mb-2">
+    <h5 class="mb-0">My assigned events</h5>
+    <a href="{% url 'booth:sale_list' %}" class="btn btn-outline-secondary btn-sm">My sales</a>
+</div>
+
 <div class="row g-3">
-    <div class="col-md-6"><div class="card h-100"><div class="card-body"><h5>Record a Sale</h5><p class="text-muted mb-0">Coming in the next phase.</p></div></div></div>
-    <div class="col-md-6"><div class="card h-100"><div class="card-body"><h5>Event Stock</h5><p class="text-muted mb-0">Coming in the next phase.</p></div></div></div>
+    {% for event in user.assigned_events.all %}
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <h5>{{ event.name }}</h5>
+                    <span class="badge {% if event.status == 'ONGOING' %}bg-info text-dark{% else %}bg-secondary{% endif %}">{{ event.get_status_display }}</span>
+                </div>
+                <p class="text-muted mb-2">{{ event.venue }} &middot; {{ event.start_date|date:"M d, Y" }} to {{ event.end_date|date:"M d, Y" }}</p>
+                <p class="mb-1 fw-semibold">Event stock</p>
+                <ul class="mb-3">
+                    {% for row in event.inventory.all %}
+                    <li>{{ row.item.name }}: {{ row.current_qty }} left</li>
+                    {% empty %}
+                    <li class="text-muted">No stock assigned yet.</li>
+                    {% endfor %}
+                </ul>
+                {% if event.status == 'ONGOING' %}
+                <a href="{% url 'booth:record_sale' event.pk %}" class="btn btn-success btn-sm">Record sale</a>
+                {% else %}
+                <span class="text-muted small">Sales can be recorded once the event is Ongoing.</span>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="col-12"><p class="text-muted">You have no assigned events yet. Ask the Owner to assign you to an event.</p></div>
+    {% endfor %}
 </div>
 {% endblock %}
