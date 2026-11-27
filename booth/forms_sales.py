@@ -12,10 +12,17 @@ class InventoryAddForm(forms.ModelForm):
 
     def __init__(self, *args, event=None, owner=None, **kwargs):
         super().__init__(*args, **kwargs)
+        self.event = event
         self.fields['item'].queryset = (
             Item.objects.filter(owner=owner, is_active=True).exclude(event_stock__event=event)
         )
         style(self)
+
+    def clean_starting_qty(self):
+        quantity = self.cleaned_data['starting_qty']
+        if quantity < 1:
+            raise ValidationError('Starting stock must be at least 1.')
+        return quantity
 
 
 class InventoryUpdateForm(forms.ModelForm):
@@ -26,6 +33,19 @@ class InventoryUpdateForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         style(self)
+
+    def clean(self):
+        data = super().clean()
+        starting = data.get('starting_qty')
+        current = data.get('current_qty')
+        if starting is not None and current is not None:
+            if starting < 1:
+                self.add_error('starting_qty', 'Starting stock must be at least 1.')
+            if current < 0:
+                self.add_error('current_qty', 'Current stock cannot be negative.')
+            if starting is not None and current is not None and current > starting:
+                self.add_error('current_qty', 'Current stock cannot exceed starting stock.')
+        return data
 
 
 class SaleForm(forms.Form):

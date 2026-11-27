@@ -21,15 +21,45 @@ which restores the stock. Sales can only be recorded while the event is Ongoing.
 - PostgreSQL (Supabase)
 
 ## How to run
-1. Clone the repo and open the folder
-2. python -m venv .venv
-3. .venv\Scripts\activate
-4. python -m pip install -r requirements.txt
-5. Copy .env.example to .env and fill in your own values
-6. python manage.py migrate
-7. python manage.py createsuperuser
-8. python manage.py runserver
-9. Open http://127.0.0.1:8000/register/
+1. Clone the repository and open the project folder.
+2. Create and activate a virtual environment:
+   ```powershell
+   python -m venv .venv
+   .\.venv\Scripts\Activate.ps1
+   ```
+3. Install dependencies:
+   ```powershell
+   python -m pip install -r requirements.txt
+   ```
+4. Copy `.env.example` to `.env`, then fill in the database credentials and secret key.
+5. Apply migrations:
+   ```powershell
+   python manage.py migrate
+   ```
+6. Create an administrator account:
+   ```powershell
+   python manage.py createsuperuser
+   ```
+7. Start the server:
+   ```powershell
+   python manage.py runserver
+   ```
+8. Open <http://127.0.0.1:8000/register/> or <http://127.0.0.1:8000/login/>.
+
+Never commit `.env`; it is excluded by `.gitignore`.
+
+## Run automated tests
+
+```powershell
+python manage.py test
+```
+
+To run tests for each app separately:
+
+```powershell
+python manage.py test accounts
+python manage.py test booth
+```
 
 ## Test accounts
 - Owner: owner1 / ArtBooth2026Test
