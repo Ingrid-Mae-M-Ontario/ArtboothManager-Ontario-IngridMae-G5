@@ -3,7 +3,6 @@ from decimal import Decimal
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db import transaction
-from django.db.models import F
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.views.decorators.http import require_POST
@@ -121,10 +120,23 @@ def void_sale(request, pk):
             messages.error(request, 'This sale is already voided.')
         else:
             for line in sale.items.all():
-                EventInventory.objects.filter(pk=line.inventory_id).update(
-                    current_qty=F('current_qty') + line.quantity
-                )
+                stock = EventInventory.objects.select_for_update().get(pk=line.inventory_id)
+                stock.current_qty += line.quantity
+                if stock.current_qty > stock.starting_qty:
+                    # owner lowered starting stock after the sale; keep the DB constraint valid
+                    stock.starting_qty = stock.current_qty
+                stock.save(update_fields=['current_qty', 'starting_qty'])
             sale.status = Sale.Status.VOIDED
             sale.save(update_fields=['status'])
             messages.success(request, f'Sale #{sale.pk} voided and stock restored.')
     return redirect('booth:sale_list')
+
+@login_required
+def sale_detail(request, pk):
+    sales = Sale.objects.select_related('event', 'recorded_by').prefetch_related('items__inventory__item')
+    if request.user.role == 'OWNER':
+        sales = sales.filter(event__owner=request.user)
+    else:
+        sales = sales.filter(recorded_by=request.user)
+    sale = get_object_or_404(sales, pk=pk)
+    return render(request, 'booth/sale_detail.html', {'sale': sale})

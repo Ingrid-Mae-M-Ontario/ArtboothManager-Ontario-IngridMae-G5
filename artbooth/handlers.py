@@ -1,4 +1,6 @@
+from django.http import HttpResponseServerError
 from django.shortcuts import render
+from django.template.loader import render_to_string
 
 
 def bad_request(request, exception=None):
@@ -14,4 +16,4 @@ def permission_denied(request, exception=None):
 
 
 def server_error(request):
-    return render(request, '500.html', status=500)
+    return HttpResponseServerError(render_to_string('500.html'))

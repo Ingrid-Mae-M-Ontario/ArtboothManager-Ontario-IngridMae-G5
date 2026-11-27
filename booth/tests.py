@@ -157,3 +157,66 @@ class CoreFeatureHardeningTests(TestCase):
         response = self.client.get('/booth/items/999999/edit/')
         self.assertEqual(response.status_code, 404)
         self.assertContains(response, '404', status_code=404)
+
+    def test_assistant_blocked_from_owner_only_pages(self):
+        self.client.force_login(self.assistant)
+        for name in ('booth:item_list', 'booth:event_list', 'booth:item_create'):
+            response = self.client.get(reverse(name))
+            self.assertRedirects(response, reverse('dashboard'), fetch_redirect_response=False)
+
+    def test_assistant_cannot_void_sale(self):
+        sale = Sale.objects.create(
+            event=self.event, recorded_by=self.assistant, payment_method=Sale.PaymentMethod.CASH,
+        )
+        self.client.force_login(self.assistant)
+        response = self.client.post(reverse('booth:void_sale', args=[sale.pk]))
+        self.assertEqual(response.status_code, 302)
+        sale.refresh_from_db()
+        self.assertEqual(sale.status, Sale.Status.COMPLETED)
+
+    def test_sale_blocked_when_event_not_ongoing(self):
+        self.event.status = Event.Status.CLOSED
+        self.event.save()
+        self.client.force_login(self.owner)
+        self.client.post(reverse('booth:record_sale', args=[self.event.pk]), {
+            'payment_method': Sale.PaymentMethod.CASH,
+            f'qty_{self.inventory.pk}': '1',
+        })
+        self.assertFalse(Sale.objects.exists())
+        self.inventory.refresh_from_db()
+        self.assertEqual(self.inventory.current_qty, 10)
+
+    def test_sale_detail_shows_own_sale(self):
+        self.client.force_login(self.assistant)
+        self.client.post(reverse('booth:record_sale', args=[self.event.pk]), {
+            'payment_method': Sale.PaymentMethod.CASH,
+            f'qty_{self.inventory.pk}': '2',
+        })
+        sale = Sale.objects.get(event=self.event)
+        response = self.client.get(reverse('booth:sale_detail', args=[sale.pk]))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Sticker')
+
+    def test_sale_detail_blocked_for_other_users_sale(self):
+        sale = Sale.objects.create(
+            event=self.event, recorded_by=self.owner, payment_method=Sale.PaymentMethod.CASH,
+        )
+        self.client.force_login(self.other_owner)
+        self.assertEqual(self.client.get(reverse('booth:sale_detail', args=[sale.pk])).status_code, 404)
+        self.client.force_login(self.assistant)
+        self.assertEqual(self.client.get(reverse('booth:sale_detail', args=[sale.pk])).status_code, 404)
+
+    def test_void_after_starting_stock_lowered_does_not_crash(self):
+        self.client.force_login(self.assistant)
+        self.client.post(reverse('booth:record_sale', args=[self.event.pk]), {
+            'payment_method': Sale.PaymentMethod.CASH,
+            f'qty_{self.inventory.pk}': '3',
+        })
+        EventInventory.objects.filter(pk=self.inventory.pk).update(starting_qty=7)
+        sale = Sale.objects.get(event=self.event)
+        self.client.force_login(self.owner)
+        response = self.client.post(reverse('booth:void_sale', args=[sale.pk]))
+        self.assertRedirects(response, reverse('booth:sale_list'))
+        self.inventory.refresh_from_db()
+        self.assertEqual(self.inventory.current_qty, 10)
+        self.assertGreaterEqual(self.inventory.starting_qty, self.inventory.current_qty)
