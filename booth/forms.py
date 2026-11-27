@@ -1,5 +1,6 @@
 from django import forms
 from django.core.exceptions import ValidationError
+from datetime import date
 
 from accounts.models import User
 from booth.models import Event, Item
@@ -54,3 +55,13 @@ class EventForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         style(self)
+
+    def clean(self):
+        data = super().clean()
+        start = data.get('start_date')
+        end = data.get('end_date')
+        if start and end and end < start:
+            self.add_error('end_date', 'End date cannot be earlier than the start date.')
+        if start and not self.instance.pk and start < date.today():
+            self.add_error('start_date', 'New events cannot start in the past.')
+        return data

@@ -63,7 +63,17 @@ class EventInventory(models.Model):
 
     class Meta:
         ordering = ['item__name']
-        constraints = [models.UniqueConstraint(fields=['event', 'item'], name='unique_item_per_event')]
+        constraints = [
+            models.UniqueConstraint(fields=['event', 'item'], name='unique_item_per_event'),
+            models.CheckConstraint(
+                condition=models.Q(starting_qty__gte=1),
+                name='event_inventory_start_min_1',
+            ),
+            models.CheckConstraint(
+                condition=models.Q(current_qty__lte=models.F('starting_qty')),
+                name='event_inventory_current_lte_start',
+            ),
+        ]
 
     def __str__(self):
         return f'{self.item} @ {self.event}'
