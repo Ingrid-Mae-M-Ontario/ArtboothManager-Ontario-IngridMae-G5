@@ -5,7 +5,7 @@
 <p class="text-muted">{{ event.venue }} &middot; {{ event.get_status_display }}</p>
 <div class="row g-4">
     <div class="col-lg-8">
-        <table class="table table-hover bg-white align-middle">
+        <div class="table-responsive"><table class="table table-hover bg-white align-middle">
             <thead><tr><th>Item</th><th>Price</th><th>Starting</th><th>Remaining</th><th class="text-end">Actions</th></tr></thead>
             <tbody>
             {% for row in rows %}
@@ -23,7 +23,7 @@
                 <tr><td colspan="5" class="text-center text-muted">No stock assigned yet.</td></tr>
             {% endfor %}
             </tbody>
-        </table>
+        </table></div>
     </div>
     <div class="col-lg-4">
         <div class="card shadow-sm"><div class="card-body">

@@ -18,5 +18,6 @@ urlpatterns = [
     path('inventory/<int:pk>/delete/', views_sales.InventoryDeleteView.as_view(), name='inventory_delete'),
     path('events/<int:event_id>/sell/', views_sales.record_sale, name='record_sale'),
     path('sales/', views_sales.sale_list, name='sale_list'),
+    path('sales/<int:pk>/', views_sales.sale_detail, name='sale_detail'),
     path('sales/<int:pk>/void/', views_sales.void_sale, name='void_sale'),
 ]

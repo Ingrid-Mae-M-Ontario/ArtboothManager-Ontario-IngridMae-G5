@@ -7,7 +7,7 @@
     <div class="card-body">
         <div class="d-flex justify-content-between">
             <div>
-                <strong>Sale #{{ sale.pk }}</strong> &middot; {{ sale.event.name }}
+                <a href="{% url 'booth:sale_detail' sale.pk %}"><strong>Sale #{{ sale.pk }}</strong></a> &middot; {{ sale.event.name }}
                 <div class="text-muted small">{{ sale.sale_date|date:"M d, Y H:i" }} &middot; by {{ sale.recorded_by.username }} &middot; {{ sale.get_payment_method_display }}</div>
             </div>
             <div class="text-end">

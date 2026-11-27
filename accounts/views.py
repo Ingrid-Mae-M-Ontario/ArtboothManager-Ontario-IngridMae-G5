@@ -62,7 +62,8 @@ def owner_dashboard(request):
 
 @role_required(User.Role.ASSISTANT)
 def assistant_dashboard(request):
-    return render(request, 'dashboards/assistant.html')
+    events = request.user.assigned_events.prefetch_related('inventory__item')
+    return render(request, 'dashboards/assistant.html', {'events': events})
 
 
 class ProfileView(LoginRequiredMixin, UpdateView):
